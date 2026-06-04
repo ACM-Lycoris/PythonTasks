@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# SQLite databases (generated)
+*.db
+
+# IDE / Editor
+.vscode/
+.claude/
+pyrightconfig.json
+
+# Generated files
+*.xlsx
+*.docx
+acm_report.html
+
+# Video files (too large for Git)
+*.mp4
+
+# Archives
+*.zip
+
+# OS
+.DS_Store
+Thumbs.db

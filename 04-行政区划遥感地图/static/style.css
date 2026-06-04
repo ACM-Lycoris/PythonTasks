@@ -1,0 +1,1007 @@
+/* ============================================================
+   中国行政区划 + 遥感数据地图 - 样式表
+   China Administrative Divisions + Remote Sensing Map - Stylesheet
+   ============================================================ */
+
+/* -------------------- 全局变量与重置 -------------------- */
+:root {
+    --primary: #1a1a2e;
+    --primary-light: #16213e;
+    --primary-dark: #0f1419;
+    --accent: #3498db;
+    --accent-light: #5dade2;
+    --gold: #f39c12;
+    --purple: #9b59b6;
+    --teal: #1abc9c;
+    --danger: #e74c3c;
+    --success: #2ecc71;
+    --bg: #f5f6fa;
+    --card-bg: #ffffff;
+    --text: #2c3e50;
+    --text-light: #7f8c8d;
+    --text-mute: #95a5a6;
+    --border: #e0e6ed;
+    --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+    --radius: 10px;
+    --header-h: 64px;
+    --breadcrumb-h: 36px;
+    --footer-h: 28px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    width: 100%;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+                 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+}
+
+/* -------------------- 顶部标题栏 -------------------- */
+.header {
+    position: relative;
+    z-index: 1000;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #ffffff;
+    padding: 8px 24px;
+    height: var(--header-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: var(--shadow);
+    flex-shrink: 0;
+}
+
+.header-content {
+    flex-shrink: 0;
+    min-width: 260px;
+}
+.header-content h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+.header-content .subtitle {
+    font-size: 0.72rem;
+    color: #a0b4c8;
+    margin-top: 2px;
+}
+
+/* 顶部搜索框 */
+.header-search {
+    flex: 1;
+    max-width: 400px;
+    position: relative;
+}
+.header-search input {
+    width: 100%;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    font-size: 0.85rem;
+    outline: none;
+    backdrop-filter: blur(6px);
+    transition: background 0.2s;
+}
+.header-search input::placeholder { color: rgba(255, 255, 255, 0.65); }
+.header-search input:focus {
+    background: rgba(255, 255, 255, 0.28);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.search-results {
+    display: none;
+    position: absolute;
+    top: 42px;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    max-height: 320px;
+    overflow-y: auto;
+    z-index: 2000;
+}
+.search-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.15s;
+}
+.search-item:hover { background: var(--bg); }
+.search-item:last-child { border-bottom: none; }
+.search-name { font-weight: 600; font-size: 0.88rem; }
+.search-meta { font-size: 0.75rem; color: var(--text-light); }
+.search-empty { color: var(--text-light); cursor: default; text-align: center; }
+.search-highlight { background: #eef5ff; border-left: 3px solid var(--accent); }
+.search-highlight-text { background: #fde68a; color: #000; padding: 0 2px; border-radius: 2px; font-weight: 600; }
+.search-type-icon { font-size: 0.9rem; margin-right: 2px; }
+
+.header-badge {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    backdrop-filter: blur(4px);
+    flex-shrink: 0;
+}
+
+/* -------------------- 面包屑导航 -------------------- */
+.breadcrumb-bar {
+    height: var(--breadcrumb-h);
+    background: linear-gradient(to right, #fff, #f8f9fa);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    z-index: 950;
+}
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+.bc-item {
+    color: var(--text);
+    font-weight: 500;
+}
+.bc-link {
+    cursor: pointer;
+    color: var(--accent);
+    transition: color 0.15s;
+}
+.bc-link:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+.bc-sep {
+    color: var(--text-mute);
+    font-size: 1.1rem;
+}
+.mode-hint {
+    font-size: 0.78rem;
+    color: var(--text-light);
+}
+
+/* -------------------- 主布局 -------------------- */
+.main-container {
+    display: flex;
+    height: calc(100vh - var(--header-h) - var(--breadcrumb-h) - var(--footer-h));
+    position: relative;
+}
+
+/* -------------------- 侧边栏 -------------------- */
+.sidebar {
+    width: 360px;
+    min-width: 360px;
+    background: var(--card-bg);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 900;
+    transition: width 0.3s ease, min-width 0.3s ease;
+}
+
+.panel {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+}
+.panel h3 {
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+}
+
+/* --- 统计面板 --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.stat-item {
+    text-align: center;
+    padding: 12px 6px;
+    background: linear-gradient(135deg, #f8f9fa, #eef2f7);
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+.stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.2;
+}
+.stat-label {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-light);
+    margin-top: 4px;
+}
+
+/* --- 快速跳转下拉框 --- */
+.quick-select, .quick-jump select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+}
+.quick-select:focus { border-color: var(--accent); }
+
+/* --- 图层开关 --- */
+.toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    cursor: pointer;
+    font-size: 0.85rem;
+    user-select: none;
+}
+.toggle-row input[type=checkbox] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--accent);
+}
+
+/* -------------------- 省份详情面板 -------------------- */
+.btn-back {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--accent);
+    background: #fff;
+    color: var(--accent);
+    border-radius: 6px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    margin-bottom: 14px;
+    transition: all 0.2s;
+    text-align: left;
+}
+.btn-back:hover { background: var(--accent); color: #fff; }
+
+.province-header, .city-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--accent);
+}
+.province-header h3, .city-header h3 {
+    font-size: 1.2rem;
+    color: var(--primary);
+    border-bottom: none;
+    padding: 0;
+    margin: 0;
+    font-weight: 700;
+}
+.province-abbr, .city-level {
+    background: var(--accent);
+    color: #fff;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+.city-level {
+    background: var(--gold);
+}
+
+.info-grid {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+}
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.82rem;
+    border-bottom: 1px dashed #e8eaed;
+}
+.info-row:last-child { border-bottom: none; }
+.info-label {
+    color: var(--text-light);
+    font-weight: 500;
+}
+.info-value {
+    color: var(--text);
+    font-weight: 600;
+    text-align: right;
+    max-width: 65%;
+}
+
+.info-section {
+    margin-bottom: 14px;
+}
+.info-section h4 {
+    font-size: 0.82rem;
+    color: var(--primary);
+    margin-bottom: 6px;
+    padding-left: 8px;
+    border-left: 3px solid var(--accent);
+}
+.info-section p {
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--text);
+    text-align: justify;
+    background: #fafbfc;
+    padding: 8px 10px;
+    border-radius: 6px;
+}
+
+/* 面板加载状态 */
+.panel-loader {
+    display: none;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255, 255, 255, 0.85);
+    z-index: 10;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    border-radius: var(--radius);
+}
+.panel-loading .panel-loader {
+    display: flex;
+}
+.panel-loading > *:not(.panel-loader) {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* --- 城市列表 --- */
+.city-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 6px;
+    background: #fafbfc;
+    border-radius: 6px;
+}
+.city-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    padding: 6px 8px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.78rem;
+    transition: all 0.15s;
+}
+.city-list-item:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    transform: translateX(2px);
+}
+.city-list-item:hover .city-tag {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+}
+.city-list-name {
+    font-weight: 600;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.city-tag {
+    font-size: 0.65rem;
+    padding: 1px 6px;
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text-light);
+    flex-shrink: 0;
+}
+.city-tag-capital { background: #fff5e6; color: var(--gold); }
+.city-tag-zizhi { background: #f3e8f9; color: var(--purple); }
+
+/* -------------------- 图例 -------------------- */
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.82rem;
+}
+.legend-dot {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    margin-right: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* -------------------- 地图容器 -------------------- */
+.map-wrapper {
+    flex: 1;
+    position: relative;
+}
+#map { width: 100%; height: 100%; background: #cfdbe5; }
+
+.btn-show-sidebar, .btn-toggle-floating {
+    position: absolute;
+    z-index: 800;
+    padding: 8px 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: all 0.2s;
+}
+.btn-show-sidebar { top: 10px; left: 10px; }
+.btn-toggle-floating {
+    top: 10px;
+    left: 10px;
+    width: 32px;
+    padding: 6px 0;
+    text-align: center;
+}
+.btn-show-sidebar:hover, .btn-toggle-floating:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+/* -------------------- 自定义标记 -------------------- */
+
+/* 省份标记 */
+.province-marker-container { background: transparent !important; }
+.province-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.province-marker:hover { transform: scale(1.15); z-index: 1000 !important; }
+.province-marker-pin {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--teal), #16a085);
+    color: #fff;
+    border: 2.5px solid #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 3px 10px rgba(26, 188, 156, 0.4);
+}
+.province-marker-name {
+    margin-top: 2px;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    padding: 2px 7px;
+    border-radius: 9px;
+    font-size: 0.68rem;
+    white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 城市标记 */
+.city-marker-container { background: transparent !important; }
+.city-marker {
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    transition: transform 0.2s;
+    position: relative;
+}
+.city-marker:hover {
+    transform: scale(1.35);
+    z-index: 999 !important;
+}
+.city-marker-label {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 4px;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 0.65rem;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* 遥感研究点标记 */
+.research-marker-container { background: transparent !important; }
+.research-marker {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--danger), #c0392b);
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    box-shadow: 0 2px 6px rgba(231, 76, 60, 0.5);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.research-marker:hover { transform: scale(1.4); }
+
+/* 聚合图标 */
+.custom-cluster { background: transparent !important; }
+.cluster-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #fff;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+.cluster-icon span { font-size: 0.85rem; }
+.cluster-small { background: rgba(46, 204, 113, 0.88); }
+.cluster-medium { background: rgba(243, 156, 18, 0.88); }
+.cluster-large { background: rgba(231, 76, 60, 0.88); }
+
+/* -------------------- 区县标记 -------------------- */
+.district-marker-container { background: transparent !important; }
+.district-marker {
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 600;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: transform 0.2s;
+    position: relative;
+}
+.district-marker:hover {
+    transform: scale(1.4);
+    z-index: 999 !important;
+}
+.district-marker-label {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 3px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 1px 5px;
+    border-radius: 6px;
+    font-size: 0.6rem;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* 区县聚类颜色 */
+.district-cluster-small { background: rgba(46, 204, 113, 0.88); }
+.district-cluster-medium { background: rgba(26, 188, 156, 0.88); }
+.district-cluster-large { background: rgba(52, 152, 219, 0.88); }
+
+/* -------------------- 区县详情面板 -------------------- */
+.district-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--teal);
+}
+.district-header h3 {
+    font-size: 1.1rem;
+    color: var(--primary);
+    border-bottom: none;
+    padding: 0;
+    margin: 0;
+}
+.district-type {
+    background: var(--teal);
+    color: #fff;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+/* -------------------- 区县弹出框 -------------------- */
+.popup-district-header {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+}
+
+/* -------------------- 遥感研究详情卡片 -------------------- */
+.research-detail-panel { padding: 0 !important; overflow: hidden; }
+
+/* 卡片头部 */
+.research-card-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 50%, #1a5276 100%);
+    color: #fff;
+    padding: 20px 18px;
+    position: relative;
+}
+.research-card-header::after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 20px;
+    width: 0; height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 12px solid #1a5276;
+}
+.research-card-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    padding: 3px 12px;
+    border-radius: 14px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(4px);
+}
+.research-card-header h3 {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0 0 12px;
+    color: #fff;
+    border: none;
+    padding: 0;
+    font-weight: 700;
+}
+.research-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.research-meta-tag {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    color: #d4e6f1;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    backdrop-filter: blur(2px);
+}
+
+/* 分类内容区 */
+.research-sections {
+    padding: 18px 16px 10px;
+    max-height: calc(100vh - 340px);
+    overflow-y: auto;
+}
+.research-section {
+    margin-bottom: 14px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #e8ecf1;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    transition: box-shadow 0.2s;
+}
+.research-section:hover {
+    box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+}
+.research-section-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: #fff;
+    letter-spacing: 0.3px;
+}
+.research-section-head .section-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.research-section-body {
+    padding: 10px 14px 12px;
+    font-size: 0.8rem;
+    line-height: 1.75;
+    color: #34495e;
+    text-align: justify;
+}
+.research-section-body ul { margin: 4px 0; padding-left: 18px; }
+.research-section-body li { margin-bottom: 4px; }
+
+/* 各分类颜色 */
+.rs-bg-purple { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }  /* 背景 */
+.rs-bg-blue   { background: linear-gradient(135deg, #2980b9, #5dade2); }  /* 技术 */
+.rs-bg-teal   { background: linear-gradient(135deg, #16a085, #2ecc71); }  /* 方法 */
+.rs-bg-orange { background: linear-gradient(135deg, #d35400, #f39c12); }  /* 数据 */
+.rs-bg-green  { background: linear-gradient(135deg, #27ae60, #58d68d); }  /* 成果 */
+.rs-bg-red    { background: linear-gradient(135deg, #c0392b, #e74c3c); }   /* 价值 */
+.rs-bg-gray   { background: linear-gradient(135deg, #566573, #85929e); }   /* 默认 */
+
+/* 研究方法标签卡 */
+.research-method-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+.research-method-tag {
+    background: linear-gradient(135deg, #eef2ff, #e8f0fe);
+    color: #2c3e50;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.73rem;
+    font-weight: 600;
+    border: 1px solid #d5dce8;
+}
+.research-method-tag.highlight {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    border-color: #f0c040;
+    color: #7d6608;
+}
+
+/* 数据指标网格 */
+.research-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 6px;
+}
+.research-metric {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+    border: 1px solid #e8ecf1;
+}
+.research-metric-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #2980b9;
+    line-height: 1.2;
+}
+.research-metric-label {
+    font-size: 0.68rem;
+    color: #7f8c8d;
+    margin-top: 2px;
+}
+
+/* 返回按钮 */
+#btnBackFromResearch {
+    margin: 12px 16px 0;
+    width: calc(100% - 32px);
+}
+
+/* -------------------- 弹出框 -------------------- */
+.custom-popup .leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+    padding: 0;
+    overflow: hidden;
+}
+.custom-popup .leaflet-popup-content {
+    margin: 0;
+    min-width: 320px;
+}
+
+.popup-content { font-size: 0.85rem; }
+.popup-header {
+    background: linear-gradient(135deg, #1a1a2e, #0f3460);
+    color: #fff;
+    padding: 14px 18px;
+}
+.popup-research-header {
+    background: linear-gradient(135deg, #c0392b, #e74c3c);
+}
+.popup-city-header {
+    background: linear-gradient(135deg, #16a085, #1abc9c);
+}
+.popup-header h3 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+.popup-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.popup-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 3px 9px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(2px);
+}
+
+.popup-body {
+    padding: 12px 18px 16px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+.popup-field {
+    margin-bottom: 6px;
+    line-height: 1.6;
+}
+.popup-overview {
+    background: #f8f9fa;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+    margin: 10px 0 0;
+}
+.popup-overview p { margin-top: 4px; line-height: 1.6; }
+.popup-label {
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 0.8rem;
+    margin-right: 4px;
+}
+
+/* -------------------- 提示框 -------------------- */
+.custom-tooltip {
+    font-size: 0.78rem;
+    padding: 6px 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    border: none;
+}
+.custom-tooltip::before { border-top-color: rgba(0, 0, 0, 0.85); }
+.custom-tooltip strong { color: var(--accent-light); }
+
+/* -------------------- 底部信息栏 -------------------- */
+.footer {
+    height: var(--footer-h);
+    background: var(--primary);
+    color: #a0b4c8;
+    text-align: center;
+    padding: 6px;
+    font-size: 0.72rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* -------------------- 错误提示 -------------------- */
+.error-toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    background: var(--danger);
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 16px rgba(231, 76, 60, 0.4);
+    animation: slideDown 0.3s ease;
+}
+.error-toast.fade-out { opacity: 0; transition: opacity 0.5s; }
+@keyframes slideDown {
+    from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* -------------------- 响应式 -------------------- */
+@media (max-width: 1024px) {
+    .header-content h1 { font-size: 1rem; }
+    .header-content .subtitle { display: none; }
+    .header-search { max-width: 280px; }
+    .sidebar { width: 300px; min-width: 300px; }
+    .city-list { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+    :root { --header-h: 100px; }
+    .header {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 8px 14px;
+    }
+    .header-search { order: 3; max-width: 100%; flex-basis: 100%; }
+    .main-container { flex-direction: column; }
+    .sidebar {
+        width: 100%;
+        min-width: unset;
+        max-height: 45vh;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+    .map-wrapper { height: 55vh; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .breadcrumb-bar { flex-direction: column; align-items: flex-start; height: auto; padding: 4px 14px; }
+    .mode-hint { font-size: 0.7rem; }
+}
+
+/* -------------------- Leaflet 覆盖 -------------------- */
+.leaflet-control-layers { font-size: 0.8rem; }
+.leaflet-control-zoom a { color: var(--primary); }
+
+/* 滚动条 */
+.sidebar::-webkit-scrollbar,
+.popup-body::-webkit-scrollbar,
+.city-list::-webkit-scrollbar,
+.search-results::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-track,
+.popup-body::-webkit-scrollbar-track,
+.city-list::-webkit-scrollbar-track,
+.search-results::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb,
+.popup-body::-webkit-scrollbar-thumb,
+.city-list::-webkit-scrollbar-thumb,
+.search-results::-webkit-scrollbar-thumb {
+    background: #c0c8d0;
+    border-radius: 3px;
+}
+.sidebar::-webkit-scrollbar-thumb:hover,
+.popup-body::-webkit-scrollbar-thumb:hover { background: #95a5a6; }

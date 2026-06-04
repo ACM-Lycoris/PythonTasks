@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国行政区划 + 遥感数据地图 | China Administrative Map</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Marker Cluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <header class="header">
+        <div class="header-content">
+            <h1>🗺️ 中国行政区划 + 遥感数据地图</h1>
+            <p class="subtitle">China Administrative Divisions & Remote Sensing Map · 点击省份/城市探索详情</p>
+        </div>
+
+        <!-- 顶部搜索框 -->
+        <div class="header-search">
+            <input type="text" id="searchInput" placeholder="🔍 搜索城市或省份（如：西安）..." autocomplete="off" />
+            <div id="searchResults" class="search-results"></div>
+        </div>
+
+        <div class="header-badge">
+            <span id="headerTotal">数据加载中...</span>
+        </div>
+    </header>
+
+    <!-- 面包屑导航 -->
+    <div class="breadcrumb-bar">
+        <div class="breadcrumb">
+            <span class="bc-item bc-link" data-level="national">🇨🇳 全国</span>
+            <span class="bc-sep" id="bcSep1" style="display:none;">›</span>
+            <span class="bc-item bc-link" id="bcProvince" data-level="province" style="display:none;"></span>
+            <span class="bc-sep" id="bcSep2" style="display:none;">›</span>
+            <span class="bc-item" id="bcCity" data-level="city" style="display:none;"></span>
+            <span class="bc-sep" id="bcSep3" style="display:none;">›</span>
+            <span class="bc-item" id="bcDistrict" data-level="district" style="display:none;"></span>
+        </div>
+        <div class="mode-hint" id="modeHint">💡 当前显示：全国视图 · 点击地图上的省份标记可查看详情</div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="main-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar" id="sidebar">
+
+            <!-- ====== 全国视图：统计面板 ====== -->
+            <div class="panel stats-panel" id="panelNational">
+                <h3>📊 全国数据概览</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="statProvinces">-</span>
+                        <span class="stat-label">省级行政区</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="statCities">-</span>
+                        <span class="stat-label">地级行政区</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="statResearch">-</span>
+                        <span class="stat-label">遥感数据点</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="statYearRange">-</span>
+                        <span class="stat-label">年份范围</span>
+                    </div>
+                </div>
+
+                <div class="quick-jump">
+                    <h4 style="margin: 14px 0 8px; font-size: 0.85rem; color: #2c3e50;">🚀 快速跳转</h4>
+                    <select id="provinceSelect" class="quick-select">
+                        <option value="">-- 选择省份 --</option>
+                    </select>
+                </div>
+
+                <div class="layer-toggle">
+                    <h4 style="margin: 14px 0 8px; font-size: 0.85rem; color: #2c3e50;">👁️ 显示图层</h4>
+                    <label class="toggle-row">
+                        <input type="checkbox" id="toggleProvinces" checked />
+                        <span>省份标记</span>
+                    </label>
+                    <label class="toggle-row">
+                        <input type="checkbox" id="toggleResearch" checked />
+                        <span>遥感数据点</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- ====== 省份视图：省份详情面板 ====== -->
+            <div class="panel province-panel" id="panelProvince" style="display:none;">
+                <div class="panel-loader" id="loaderProvince"><div class="spinner"></div><span>加载省份数据中...</span></div>
+                <button class="btn-back" id="btnBackFromProvince">← 返回全国</button>
+                <div class="province-header">
+                    <h3 id="provinceName">-</h3>
+                    <span class="province-abbr" id="provinceAbbr">-</span>
+                </div>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <span class="info-label">省会：</span>
+                        <span class="info-value" id="provinceCapital">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">人口：</span>
+                        <span class="info-value" id="provincePopulation">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">面积：</span>
+                        <span class="info-value" id="provinceArea">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">下辖城市：</span>
+                        <span class="info-value" id="provinceCityCount">-</span>
+                    </div>
+                </div>
+                <div class="info-section">
+                    <h4>📖 省份介绍</h4>
+                    <p id="provinceIntro">-</p>
+                </div>
+                <div class="info-section">
+                    <h4>🎭 文化特色</h4>
+                    <p id="provinceCulture">-</p>
+                </div>
+                <div class="info-section">
+                    <h4>🏙️ 下辖城市（点击查看）</h4>
+                    <div class="city-list" id="cityList"></div>
+                </div>
+            </div>
+
+            <!-- ====== 城市视图：城市详情面板 ====== -->
+            <div class="panel city-panel" id="panelCity" style="display:none;">
+                <div class="panel-loader" id="loaderCity"><div class="spinner"></div><span>加载城市数据中...</span></div>
+                <button class="btn-back" id="btnBackFromCity">← 返回省份</button>
+                <div class="city-header">
+                    <h3 id="cityName">-</h3>
+                    <span class="city-level" id="cityLevel">-</span>
+                </div>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <span class="info-label">所属省份：</span>
+                        <span class="info-value" id="cityProvince">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">人口：</span>
+                        <span class="info-value" id="cityPopulation">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">面积：</span>
+                        <span class="info-value" id="cityArea">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">GDP：</span>
+                        <span class="info-value" id="cityGDP">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">建城历史：</span>
+                        <span class="info-value" id="cityEstablished">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">气候特点：</span>
+                        <span class="info-value" id="cityClimate">-</span>
+                    </div>
+                </div>
+                <div class="info-section">
+                    <h4>📖 城市介绍</h4>
+                    <p id="cityIntro">-</p>
+                </div>
+                <div class="info-section">
+                    <h4>🎭 文化底蕴</h4>
+                    <p id="cityCulture">-</p>
+                </div>
+                <div class="info-section">
+                    <h4>🏞️ 著名景点</h4>
+                    <p id="cityAttractions">-</p>
+                </div>
+            </div>
+
+            <!-- ====== 区县视图：区县详情面板 ====== -->
+            <div class="panel district-panel" id="panelDistrict" style="display:none;">
+                <div class="panel-loader" id="loaderDistrict"><div class="spinner"></div><span>加载区县数据中...</span></div>
+                <button class="btn-back" id="btnBackFromDistrict">← 返回上级</button>
+                <div class="district-header">
+                    <h3 id="districtName">-</h3>
+                    <span class="district-type" id="districtType">-</span>
+                </div>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <span class="info-label">所属城市：</span>
+                        <span class="info-value" id="districtCity">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">所属省份：</span>
+                        <span class="info-value" id="districtProvince">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">人口：</span>
+                        <span class="info-value" id="districtPopulation">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">面积：</span>
+                        <span class="info-value" id="districtArea">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 遥感研究详情卡片 ====== -->
+            <div class="panel research-detail-panel" id="panelResearch" style="display:none;">
+                <div class="panel-loader" id="loaderResearch"><div class="spinner"></div><span>加载遥感案例...</span></div>
+                <button class="btn-back" id="btnBackFromResearch">← 返回地图</button>
+
+                <!-- 标题区域 -->
+                <div class="research-card-header" id="researchHeader">
+                    <div class="research-card-badge">🛰️ 遥感研究案例</div>
+                    <h3 id="researchTitle">-</h3>
+                    <div class="research-card-meta">
+                        <span class="research-meta-tag" id="researchAuthor">-</span>
+                        <span class="research-meta-tag" id="researchInstitution">-</span>
+                        <span class="research-meta-tag" id="researchYear">-</span>
+                        <span class="research-meta-tag" id="researchProvince">-</span>
+                    </div>
+                </div>
+
+                <!-- 分类内容区域 -->
+                <div class="research-sections" id="researchSections">
+                    <!-- 由JS动态填充 -->
+                </div>
+            </div>
+
+            <!-- 图例 -->
+            <div class="panel legend-panel">
+                <h3>📌 图例说明</h3>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:#1abc9c;"></span>
+                    <span>省份/直辖市</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:#f39c12;"></span>
+                    <span>省会城市</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:#3498db;"></span>
+                    <span>地级市</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:#9b59b6;"></span>
+                    <span>自治州/盟/地区</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:#2ecc71;"></span>
+                    <span>市辖区</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:#1abc9c;"></span>
+                    <span>县级市</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:#95a5a6;"></span>
+                    <span>县/自治县</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:#8e44ad;"></span>
+                    <span>旗/自治旗</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:#e74c3c;"></span>
+                    <span>遥感研究点</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 地图容器 -->
+        <div class="map-wrapper">
+            <div id="map"></div>
+            <button id="showSidebar" class="btn-show-sidebar" style="display:none;">▶ 展开面板</button>
+            <button id="toggleSidebar" class="btn-toggle-floating" title="折叠侧边栏">◀</button>
+        </div>
+    </div>
+
+    <!-- 底部信息栏 -->
+    <footer class="footer">
+        <p>🌐 中国行政区划 + 遥感研究数据集成可视化系统 | 数据涵盖全国 34 省 / 340+ 地级行政区 | 仅供学习研究</p>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Marker Cluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <!-- 自定义 JS -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

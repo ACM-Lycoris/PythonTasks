@@ -1,0 +1,366 @@
+
+注意，有一些库不是系统自带的（需要通过 pip install 安装的）：
+
+  1. pandas — pip install pandas
+  2. numpy — pip install numpy
+  3. flask — pip install flask
+  4. openpyxl — pip install openpyxl
+
+================================================================================
+        ACM 队伍数据管理平台 — 功能函数总览与调用说明
+================================================================================
+
+声明：Powered By Claude Code * Deepseek v4 pro API
+
+【项目概述】
+  技术栈: Python Flask + Pandas + NumPy + openpyxl + SQLite + Chart.js
+  文件: app.py (单文件全栈应用)
+  总代码行数: 2918 行
+  启动方式: python app.py → http://127.0.0.1:5000
+
+================================================================================
+  函数总数量统计
+================================================================================
+
+  ┌─────────────────────────────────┬──────────┐
+  │ 类别                            │ 数量     │
+  ├─────────────────────────────────┼──────────┤
+  │ Python 后端函数                  │    38    │
+  │ Flask 路由接口                   │    27    │
+  │ JavaScript 前端函数              │    62    │
+  │ 事件处理器 (onclick/onchange等)  │    52    │
+  │ CSS 样式规则块                   │    97    │
+  │ 累计可调用单元                   │   179+   │
+  └─────────────────────────────────┴──────────┘
+
+================================================================================
+  一、Python 后端函数 (38个)
+================================================================================
+
+【核心数据处理】(7个)
+  1. _load_default()          — 加载默认 ACM 队伍数据
+  2. _reset_default()         — 重置为默认数据
+  3. df_to_csv_bytes()        — DataFrame 转 CSV 字节流 (BOM UTF-8)
+  4. _detect_type()           — 自动检测列数据类型 (数值/文本)
+  5. _is_chinese()            — 正则判断中文字符
+  6. _push_history()          — 压入撤销历史栈 (深拷贝)
+  7. _clear_redo()            — 清空重做栈
+
+【路由控制器】(27个Flask路由)
+  8.  index()                 — GET  /                   主页面
+  9.  api_data()              — GET  /api/data           返回JSON数据+条件格式+搜索
+  10. upload()                — POST /upload             上传CSV/Excel文件
+  11. reset()                 — POST /reset              恢复默认数据
+  12. save()                  — GET  /save               导出CSV文件
+  13. save_excel()            — GET  /save_excel         导出Excel (openpyxl带样式)
+  14. save_html_report()      — GET  /save_html_report   导出HTML数据分析报告
+  15. api_insights()          — GET  /api/insights       AI数据洞察 (质量评分+异常检测+相关性)
+  16. api_merge()             — POST /api/merge          合并数据集 (concat/join)
+  17. edit_cell()             — POST /edit_cell          内联编辑单个单元格
+  18. api_undo()              — POST /api/undo           撤销操作
+  19. api_redo()              — POST /api/redo           重做操作
+  20. api_add_row()           — POST /api/row/add        添加空行
+  21. api_delete_rows()       — POST /api/row/delete     批量删除行
+  22. api_duplicate_rows()    — POST /api/row/duplicate  批量复制行
+  23. api_col_stats()         — GET  /api/stats/<col>    列统计 (均值/标准差/直方图等)
+  24. process()               — POST /process            核心批处理 (20+种操作)
+  25. api_db_save()           — POST /api/db/save        保存到SQLite数据库
+  26. api_db_load()           — POST /api/db/load        从SQLite数据库加载
+  27. api_backup_list()       — GET  /api/backup/list    列出所有备份
+  28. api_backup_create()     — POST /api/backup/create  创建命名备份
+  29. api_backup_restore()    — POST /api/backup/restore 恢复备份
+  30. api_backup_delete()     — POST /api/backup/delete  删除备份
+  31. api_diff()              — POST /api/diff           数据对比
+  32. api_nlquery()           — GET  /api/nlquery        自然语言查询
+  33. api_bulk_cols()         — POST /api/bulk_cols      批量列操作
+  34. print_view()            — GET  /print              打印友好视图
+
+【内部处理函数】
+  35. _apply_cell_op()        — 单元格文本操作调度 (30+种操作)
+  36. save_to_sqlite()        — DataFrame写入SQLite
+  37. load_from_sqlite()      — 从SQLite读取DataFrame
+  38. eval_formula()          — 公式列求值引擎 (支持x, idx, abs, round等)
+
+================================================================================
+  二、process() 路由支持的操作类型 (20+种)
+================================================================================
+
+【列级操作】
+  39. delete         — 删除列
+  40. sort_asc       — 升序排列
+  41. sort_desc      — 降序排列
+  42. dedup          — 去重
+  43. count_values   — 值计数
+  44. fill_empty     — 填充空值
+  45. clone          — 克隆列
+  46. rename         — 重命名列
+  47. mask_col       — 数据脱敏 (partial/stars/hash三种模式)
+  48. reorder_cols   — 列顺序重排
+
+【筛选操作】
+  49. filter         — 条件筛选 (contains/equals/startswith/endswith/regex/gt/lt/not_empty/is_empty)
+  50. clear_filter   — 清除筛选恢复全部
+
+【计算操作】
+  51. calc_col       — 计算列 (len/word_count/is_palindrome/digit_sum/upper/lower/reverse/strip)
+  52. formula_col    — 自定义公式列 (支持数学表达式)
+  53. pivot          — 透视表 (count/sum/mean/max/min)
+
+【单元格批量操作】(30+种子操作)
+  54. delete_chars   — 删除指定字符
+  55. replace        — 查找替换
+  56. case           — 大小写转换 (upper/lower/title/capitalize)
+  57. reverse        — 反转字符串
+  58. strip          — 去除空格 (both/left/right/all)
+  59. prefix         — 添加前缀
+  60. suffix         — 添加后缀
+  61. slice          — 截取子串
+  62. regex          — 正则替换
+  63. split_take     — 分隔取段
+  64. extract_digits — 提取数字
+  65. extract_letters— 提取字母
+  66. extract_chinese— 提取中文
+  67. remove_digits  — 去除数字
+  68. remove_letters — 去除字母
+  69. remove_chinese — 去除中文
+  70. remove_punct   — 去除标点
+  71. pad_left       — 左填充
+  72. pad_right      — 右填充
+  73. to_number      — 转为数字
+  74. to_text        — 转为文本
+  75. clear          — 清空
+
+================================================================================
+  三、JavaScript 前端函数 (62个)
+================================================================================
+
+【表格渲染与数据加载】
+  1.  loadTable()         — 异步加载并渲染完整表格 (表头+表体+条件格式+下拉填充)
+  2.  escHtml()           — HTML转义 (防XSS)
+  3.  escAttr()           — 属性值转义
+
+【内联编辑系统】
+  4.  startEdit()         — 进入单元格编辑模式
+  5.  onEditKey()         — 编辑模式键盘导航 (Enter/Tab/Esc)
+  6.  commitEdit()        — 提交编辑到服务器
+
+【选择系统 (单元格+行+列)】
+  7.  selectCol()         — 选中/取消列
+  8.  selectCell()        — 选中/取消单元格 (支持Ctrl多选)
+  9.  clearSelection()    — 清除所有选择
+  10. toggleRow()         — 切换行复选框
+  11. toggleAllRows()     — 全选/取消所有行
+  12. updateRowBadge()    — 更新行选择计数
+
+【行操作】
+  13. addRow()            — 新增行
+  14. deleteSelectedRows()— 删除选中行
+  15. duplicateSelectedRows()— 复制选中行
+
+【撤销/重做】
+  16. undo()              — 撤销 (Ctrl+Z)
+  17. redo()              — 重做 (Ctrl+Y)
+
+【搜索与查询】
+  18. onGlobalSearch()    — 全局正则搜索
+  19. clearSearch()       — 清除搜索
+  20. updateSearchBadge() — 更新搜索结果计数
+  21. nlQuery()           — 自然语言查询
+
+【列操作】
+  22. colAction()         — 列操作调度 (含拖拽重排/脱敏/字母排序)
+
+【单元格批量操作】
+  23. cellAction()        — 单元格批量操作调度
+
+【筛选与计算】
+  24. applyFilter()       — 应用筛选条件
+  25. clearFilter()       — 清除筛选
+  26. addCalcCol()        — 添加计算列
+  27. addFormulaCol()     — 添加公式列
+  28. applyPivot()        — 应用透视表
+
+【列统计与可视化】
+  29. openColumnStats()   — 打开选中列统计
+  30. openStats()         — 打开数值列统计
+  31. openStatsForCol()   — 打开指定列统计 (含Chart.js直方图)
+  32. closeStats()        — 关闭统计模态
+  33. openCharts()        — 打开可视化模态
+  34. closeCharts()       — 关闭可视化模态
+  35. renderChart()       — 渲染Chart.js图表 (柱状/折线/饼/雷达/散点)
+
+【数据洞察】
+  36. openInsights()      — 打开AI数据洞察报告
+  37. closeInsights()     — 关闭洞察模态
+
+【备份管理】
+  38. openBackups()       — 打开备份管理模态
+  39. closeBackups()      — 关闭备份模态
+  40. refreshBackupList() — 刷新备份列表
+  41. createBackup()      — 创建备份
+  42. restoreBackup()     — 恢复备份
+  43. deleteBackup()      — 删除备份
+  44. diffBackup()        — 对比备份数据
+
+【SQLite持久化】
+  45. saveToDB()          — 保存到SQLite
+  46. loadFromDB()        — 从SQLite加载
+
+【拖拽列排序】
+  47. dragCol()           — 开始拖拽列
+  48. dragOver()          — 拖拽悬停
+  49. dragEnd()           — 拖拽结束
+  50. dropCol()           — 释放列完成排序
+
+【文件操作】
+  51. saveCSV()           — 导出CSV
+  52. saveExcel()         — 导出Excel
+  53. saveReport()        — 导出HTML报告
+
+【自动保存】
+  54. autoSave()          — 自动保存状态到localStorage
+  55. loadAutoSave()      — 从localStorage恢复状态
+
+【UI辅助】
+  56. toast()             — 显示Toast通知
+  57. togglePanel()       — 折叠/展开面板
+  58. hideCtx()           — 隐藏右键菜单
+  59. copyCell()          — 复制单元格值到剪贴板
+  60. updateSearchBadge() — 更新搜索徽标
+  61. renderChart()       — 图表渲染
+  62. bindDiffUpload()    — 绑定文件对比上传事件
+
+================================================================================
+  四、功能特性矩阵
+================================================================================
+
+  ┌──────────────────────────────────┬─────────────────────────────────────┐
+  │ 功能分类                         │ 详细能力                            │
+  ├──────────────────────────────────┼─────────────────────────────────────┤
+  │ 📥 数据导入                      │ CSV导入, Excel(.xlsx)导入,          │
+  │                                  │ 数据集合并(concat/join), SQLite加载 │
+  ├──────────────────────────────────┼─────────────────────────────────────┤
+  │ 📤 数据导出                      │ CSV导出, Excel导出(带样式),         │
+  │                                  │ HTML报告导出, 打印友好视图          │
+  ├──────────────────────────────────┼─────────────────────────────────────┤
+  │ ✏ 数据编辑                      │ 内联编辑(Enter/Tab/Esc导航),        │
+  │                                  │ 30+种单元格批量操作, 撤销/重做(50层)│
+  ├──────────────────────────────────┼─────────────────────────────────────┤
+  │ 📊 列操作                        │ 删除/排序/去重/计数/填充/克隆/      │
+  │                                  │ 重命名/脱敏/拖拽重排/字母排序       │
+  ├──────────────────────────────────┼─────────────────────────────────────┤
+  │ 🔍 筛选与搜索                    │ 8种筛选条件, 全局正则搜索,           │
+  │                                  │ 自然语言查询                        │
+  ├──────────────────────────────────┼─────────────────────────────────────┤
+  │ 🧮 计算与统计                    │ 8种计算列, 自定义公式列,             │
+  │                                  │ 5种聚合透视表, 完整列统计            │
+  ├──────────────────────────────────┼─────────────────────────────────────┤
+  │ 📈 数据可视化                    │ 5种Chart.js图表, 双图并排,           │
+  │                                  │ 交互式图表配置, 列统计直方图         │
+  ├──────────────────────────────────┼─────────────────────────────────────┤
+  │ 🧠 AI智能分析                    │ 数据质量评分, 异常值检测(IQR),       │
+  │                                  │ 相关性分析(Pearson), 偏态检测,       │
+  │                                  │ 分类列识别, 主键候选发现             │
+  ├──────────────────────────────────┼─────────────────────────────────────┤
+  │ 💾 持久化与备份                  │ SQLite存储, 命名备份(CSV),           │
+  │                                  │ 备份恢复/删除, 数据对比(Diff)        │
+  ├──────────────────────────────────┼─────────────────────────────────────┤
+  │ 🎨 用户体验                      │ 暗色科技风, 动态网格背景,            │
+  │                                  │ 条件格式(5档热力图), 面板折叠,       │
+  │                                  │ 右键菜单, 键盘快捷键(Ctrl+Z/Y/S/F),  │
+  │                                  │ 自动保存(localStorage), Toast通知    │
+  ├──────────────────────────────────┼─────────────────────────────────────┤
+  │ 🛡 安全与数据治理                │ 数据脱敏(部分/全遮/哈希),            │
+  │                                  │ XSS防护(HTML转义), 线程安全锁       │
+  └──────────────────────────────────┴─────────────────────────────────────┘
+
+================================================================================
+  五、技术架构
+================================================================================
+
+  app.py (2918行)
+  ├── 后端 Python (Flask)
+  │   ├── 路由层: 27个 @app.route 端点
+  │   ├── 业务层: 38个 Python函数
+  │   ├── 数据处理: Pandas DataFrame, NumPy, openpyxl, sqlite3
+  │   └── 数据持久化: SQLite + CSV备份
+  ├── 前端 JavaScript (62个函数)
+  │   ├── 状态管理: selectedCol, selectedCells, selectedRows, _editingCell
+  │   ├── UI渲染: 动态表格生成, 条件格式, 图表渲染
+  │   ├── 事件系统: 52个事件处理器 (onclick/onchange/ondrag等)
+  │   └── 持久化: localStorage自动保存
+  ├── 样式 CSS (97个规则块)
+  │   ├── 暗色主题: CSS变量 (--cyan, --pink, --green等)
+  │   ├── 动画: gridPulse, button hover, toast
+  │   └── 响应式: max-width, overflow, media queries
+  └── 外部依赖
+      ├── Flask 3.1.3
+      ├── Pandas 3.0.3
+      ├── NumPy 2.4.4
+      ├── openpyxl 3.1.5
+      └── Chart.js 4.4.7 (CDN)
+
+================================================================================
+  六、API 接口一览 (27个端点)
+================================================================================
+
+  GET  /                       主页面
+  GET  /api/data               获取数据JSON (含条件格式/搜索过滤)
+  POST /upload                 上传CSV/Excel文件
+  POST /reset                  恢复默认数据
+  GET  /save                   导出CSV
+  GET  /save_excel             导出Excel
+  GET  /save_html_report       导出HTML分析报告
+  GET  /api/insights           AI数据洞察报告
+  POST /api/merge              合并数据集
+  POST /edit_cell              编辑单元格
+  POST /api/undo               撤销
+  POST /api/redo               重做
+  POST /api/row/add            添加行
+  POST /api/row/delete         删除行
+  POST /api/row/duplicate      复制行
+  GET  /api/stats/<col>        列统计
+  POST /process                批量处理 (20+操作)
+  POST /api/db/save            保存到SQLite
+  POST /api/db/load            从SQLite加载
+  GET  /api/backup/list        备份列表
+  POST /api/backup/create      创建备份
+  POST /api/backup/restore     恢复备份
+  POST /api/backup/delete      删除备份
+  POST /api/diff               数据对比
+  GET  /api/nlquery            自然语言查询
+  POST /api/bulk_cols          批量列操作
+  GET  /print                  打印友好视图
+
+================================================================================
+  调用链路示例
+================================================================================
+
+  用户点击"保存CSV"
+  → saveCSV() [JS函数]
+  → window.location.href = "/save"
+  → save() [Python路由]
+  → df_to_csv_bytes() [Python辅助函数]
+  → send_file() [Flask响应]
+
+  用户按Ctrl+Z
+  → keydown事件 [事件处理器]
+  → undo() [JS函数]
+  → fetch("/api/undo") [HTTP请求]
+  → api_undo() [Python路由]
+  → _push_history() / _clear_redo() [Python辅助函数]
+
+  用户双击单元格编辑
+  → ondblclick → startEdit() [JS]
+  → loadTable() [JS - 渲染编辑框]
+  → 用户按Enter → onEditKey() [JS]
+  → commitEdit() [JS]
+  → fetch("/edit_cell") [HTTP]
+  → edit_cell() [Python路由]
+  → _push_history() + DF.at[row, col] = value [Python]
+  → jsonify → toast() [JS]
+
+================================================================================
+  统计日期: 2026-05-12
+  版本: v3.0
+================================================================================
